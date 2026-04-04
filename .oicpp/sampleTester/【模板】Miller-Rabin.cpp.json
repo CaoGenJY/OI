@@ -1,0 +1,22 @@
+{
+  "samples": [
+    {
+      "id": 1,
+      "inputType": "userinput",
+      "outputType": "userinput",
+      "input": "6 \n2 \n13 \n134 \n8897 \n1234567654321 \n1000000000000 \n",
+      "output": "Yes\nYes\nNo\nNo\nNo\nNo",
+      "timeLimit": 1000,
+      "result": {
+        "status": "AC",
+        "output": "Yes\nYes\nNo\nNo\nNo\nNo\n",
+        "time": 1,
+        "usedSpj": false
+      }
+    }
+  ],
+  "globalSettings": {
+    "useTestlib": false,
+    "spjPath": ""
+  }
+}

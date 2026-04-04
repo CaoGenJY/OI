@@ -1,0 +1,31 @@
+{
+  "samples": [
+    {
+      "id": 1,
+      "inputType": "userinput",
+      "outputType": "userinput",
+      "input": "12\n1 1 0 0 1 1 1 0 1 1 0 0\n",
+      "output": "1 3 5 8 9 11\n2 4 6 12\n7\n10\n",
+      "timeLimit": 1000,
+      "result": {
+        "status": "WA",
+        "output": "1 3 5 8 9 11 2 4 6 10 12 7 \n\n\n\n",
+        "time": 33,
+        "usedSpj": false
+      }
+    },
+    {
+      "id": 2,
+      "inputType": "userinput",
+      "outputType": "userinput",
+      "input": "20\n1 1 1 1 0 0 0 1 1 1 0 0 1 0 1 1 0 0 0 0\n",
+      "output": "1 3 5 8 9 11\n2 4 6 12\n7\n10\n",
+      "timeLimit": 1000,
+      "result": null
+    }
+  ],
+  "globalSettings": {
+    "useTestlib": false,
+    "spjPath": ""
+  }
+}

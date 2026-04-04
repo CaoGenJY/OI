@@ -1,0 +1,19 @@
+{
+  "samples": [
+    {
+      "id": 1,
+      "inputType": "userinput",
+      "outputType": "userinput",
+      "input": "",
+      "output": "",
+      "timeLimit": 1000,
+      "useTestlib": false,
+      "spjPath": "",
+      "result": null
+    }
+  ],
+  "globalSettings": {
+    "useTestlib": false,
+    "spjPath": ""
+  }
+}
