@@ -27,6 +27,3 @@ find . -type f \
   -delete
 
   echo "操作已完成"
-  
-git add .
-git commit -m "hyw"
