@@ -4,124 +4,114 @@
 
 using namespace std;
 
-const int MAXN = 10005;
-const int MAXK = 10000005; // 路径最大长度
-const int INF = 1e9;
+const int MAXN = 40005;
 
 struct Edge {
     int to, weight;
 };
 
-vector<Edge> G[MAXN];
-int n, m;
-int query[105], ans[105];
-int sz[MAXN], max_sz[MAXN], root, total_sz;
-bool vis[MAXN]; // 标记节点是否作为重心被处理过
-int dist[MAXN], d_cnt; // 存储当前子树所有节点到重心的距离
-bool has_dist[MAXK]; // 标记之前子树中出现过的距离
-int q[MAXN], q_cnt; // 暂存当前正在处理的子树距离，方便后续更新 has_dist
+vector<Edge> g[MAXN];
+int n, k;
+long long ans;
 
-// --- 1. 寻找重心 ---
-// 重心：最大子树的大小最小的点
+// 用于寻找重心的变量
+int siz[MAXN], max_part[MAXN];
+bool vis[MAXN];
+int total_nodes, root;
+
+// 存储当前连通块或子树中的距离
+int dist[MAXN], d_cnt;
+
+// 1. 寻找重心
 void get_root(int u, int fa) {
-    sz[u] = 1;
-    max_sz[u] = 0;
-    for (auto &e : G[u]) {
-        if (e.to == fa || vis[e.to]) continue;
-        get_root(e.to, u);
-        sz[u] += sz[e.to];
-        max_sz[u] = max(max_sz[u], sz[e.to]);
+    siz[u] = 1;
+    max_part[u] = 0;
+    for (const auto& edge : g[u]) {
+        int v = edge.to;
+        if (v == fa || vis[v]) continue;
+        get_root(v, u);
+        siz[u] += siz[v];
+        max_part[u] = max(max_part[u], siz[v]);
     }
-    max_sz[u] = max(max_sz[u], total_sz - sz[u]);
-    if (!root || max_sz[u] < max_sz[root]) root = u;
+    max_part[u] = max(max_part[u], total_nodes - siz[u]);
+    if (max_part[u] < max_part[root]) {
+        root = u;
+    }
 }
 
-// --- 2. 收集距离 ---
-// 递归收集当前子树中所有节点到分治中心的距离
+// 2. 收集距离
 void get_dist(int u, int fa, int d) {
-    if (d > 1e7) return; // 题目给出的 k 最大 1e7，超过则无意义
     dist[++d_cnt] = d;
-    for (auto &e : G[u]) {
-        if (e.to == fa || vis[e.to]) continue;
-        get_dist(e.to, u, d + e.weight);
+    for (const auto& edge : g[u]) {
+        int v = edge.to;
+        if (v == fa || vis[v]) continue;
+        get_dist(v, u, d + edge.weight);
     }
 }
 
-// --- 3. 处理当前重心 ---
-void calc(int u) {
-    q_cnt = 0;
-    has_dist[0] = true; // 距离为0的路径（即重心本身）
-    q[++q_cnt] = 0;
-
-    for (auto &e : G[u]) {
-        if (vis[e.to]) continue;
-        d_cnt = 0;
-        get_dist(e.to, u, e.weight); // 获取该子树所有点到u的距离
-
-        // 尝试与之前子树的路径合并
-        for (int i = 1; i <= d_cnt; ++i) {
-            for (int k = 1; k <= m; ++k) {
-                if (query[k] >= dist[i] && has_dist[query[k] - dist[i]]) {
-                    ans[k] = true;
-                }
-            }
-        }
-
-        // 将当前子树的距离加入 has_dist，供后面的子树合并
-        for (int i = 1; i <= d_cnt; ++i) {
-            if (dist[i] < MAXK) {
-                if (!has_dist[dist[i]]) {
-                    has_dist[dist[i]] = true;
-                    q[++q_cnt] = dist[i]; // 记录哪些位置变为了true，方便清空
-                }
-            }
+// 3. 计算距离小于等于 k 的点对数（双指针）
+long long calc(int u, int init_d) {
+    d_cnt = 0;
+    get_dist(u, 0, init_d);
+    sort(dist + 1, dist + d_cnt + 1);
+    
+    long long res = 0;
+    int l = 1, r = d_cnt;
+    while (l < r) {
+        if (dist[l] + dist[r] <= k) {
+            res += (r - l);
+            l++;
+        } else {
+            r--;
         }
     }
-
-    // --- 4. 清空 has_dist ---
-    // 千万不要 memset，利用记录的 q 数组只清空修改过的地方
-    for (int i = 1; i <= q_cnt; ++i) has_dist[q[i]] = false;
+    return res;
 }
 
-// --- 5. 分治主函数 ---
-void solve(int u) {
+// 4. 点分治主函数
+void divide(int u) {
+    // 计算当前整体连通块的贡献
+    ans += calc(u, 0);
     vis[u] = true;
-    calc(u); // 处理经过当前重心 u 的所有路径
-    for (auto &e : G[u]) {
-        if (vis[e.to]) continue;
-        // 递归处理子树，需要重新找子树的重心
-        total_sz = sz[e.to];
+    
+    for (const auto& edge : g[u]) {
+        int v = edge.to;
+        if (vis[v]) continue;
+        
+        // 容斥：减去同一棵子树内不经过根节点的重复统计
+        ans -= calc(v, edge.weight);
+        
+        // 递归处理子树，先求出子树的重心
+        total_nodes = siz[v];
         root = 0;
-        get_root(e.to, u);
-        solve(root);
+        get_root(v, 0);
+        divide(root);
     }
 }
 
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
-
-    cin >> n >> m;
-    for (int i = 1; i < n; ++i) {
+    
+    cin >> n;
+    for (int i = 1; i < n; i++) {
         int u, v, w;
         cin >> u >> v >> w;
-        G[u].push_back({v, w});
-        G[v].push_back({u, w});
+        g[u].push_back({v, w});
+        g[v].push_back({u, w});
     }
-
-    for (int i = 1; i <= m; ++i) cin >> query[i];
-
-    // 初始化找全树重心
-    total_sz = n;
+    cin >> k;
+    
+    // 初始化寻找全局重心
+    max_part[0] = n + 1;
+    total_nodes = n;
     root = 0;
     get_root(1, 0);
-
-    // 开始分治
-    solve(root);
-
-    for (int i = 1; i <= m; ++i) {
-        cout << (ans[i] ? "AYE" : "NAY") << "\n";
-    }
-
+    
+    // 开始点分治
+    divide(root);
+    
+    cout << ans << "\n";
+    
     return 0;
 }

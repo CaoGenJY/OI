@@ -29,7 +29,6 @@ struct FHQ_Treap{
                 split(tr[p].l,k,id,x,tr[p].l);
             }
             pushup(p);
-        }
     }
     int merge(int x,int y){
         if(!x||!y) return x+y;
